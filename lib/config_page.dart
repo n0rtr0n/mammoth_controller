@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:mammoth_controller/models/pattern.dart' as models;
 
 class ConfigPage extends StatefulWidget {
-  const ConfigPage({super.key});
+  const ConfigPage({
+    super.key,
+    required this.currentPatterns,
+    required this.onPatternsUpdated,
+  });
+
+  final List<models.Pattern> currentPatterns;
+  final Function(List<models.Pattern>) onPatternsUpdated;
 
   static const defaultBaseUrl = 'http://127.0.0.1:8008';
   static const baseUrlKey = 'base_url';
@@ -77,6 +86,32 @@ class _ConfigPageState extends State<ConfigPage> {
     }
   }
 
+  Future<void> _fetchPatterns() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${_baseUrlController.text}/patterns'),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final Map<String, dynamic> patternsData = data['patterns'];
+        final List<models.Pattern> fetchedPatterns = [];
+        patternsData.forEach((key, pattern) {
+          fetchedPatterns.add(models.Pattern.fromJson(key, pattern));
+        });
+
+        widget.onPatternsUpdated(fetchedPatterns);
+        if (!mounted) return;
+        Navigator.pop(context, fetchedPatterns);
+      } else {
+        throw Exception('Failed to fetch patterns');
+      }
+    } catch (e) {
+      setState(() {
+        _testResult = 'Error: Failed to fetch patterns: $e';
+      });
+    }
+  }
+
   @override
   void dispose() {
     _baseUrlController.dispose();
@@ -106,7 +141,7 @@ class _ConfigPageState extends State<ConfigPage> {
                 fillColor: Theme.of(context).colorScheme.surface,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -127,8 +162,17 @@ class _ConfigPageState extends State<ConfigPage> {
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _fetchPatterns,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Fetch Patterns'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
+            ),
             if (_testResult != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               Text(
                 _testResult!,
                 textAlign: TextAlign.center,
@@ -139,6 +183,19 @@ class _ConfigPageState extends State<ConfigPage> {
                 ),
               ),
             ],
+            const SizedBox(height: 16),
+            const Text(
+              'Troubleshooting',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Text(
+              '• Make sure you are connected to the Mammoth WiFi\n'
+              '• The default URL should work when connected',
+              style: TextStyle(fontSize: 14),
+            ),
           ],
         ),
       ),

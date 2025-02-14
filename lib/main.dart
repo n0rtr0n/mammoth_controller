@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mammoth_controller/models/pattern.dart' as models;
 
 import 'package:mammoth_controller/pattern_selector.dart';
 import 'package:mammoth_controller/config_page.dart';
@@ -41,7 +42,7 @@ class MammothController extends StatelessWidget {
           color: kColorScheme.secondaryContainer,
           margin: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 8,
+            vertical: 4,
           ),
           elevation: 4,
           shape: RoundedRectangleBorder(
@@ -72,7 +73,7 @@ class MammothController extends StatelessWidget {
         colorScheme: kDarkColorScheme,
         cardTheme: const CardTheme().copyWith(
           color: kDarkColorScheme.secondaryContainer,
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           elevation: 4,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -97,26 +98,101 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
+  List<models.Pattern> _patterns = [];
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_patterns.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please fetch patterns to begin using the app'),
+            duration: Duration(seconds: 4),
+          ),
+        );
+      });
+
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Mammoth Controller Home'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'No patterns loaded',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Please fetch patterns from the config page to begin',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final patterns = await Navigator.push<List<models.Pattern>>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ConfigPage(
+                        currentPatterns: _patterns,
+                        onPatternsUpdated: _updatePatterns,
+                      ),
+                    ),
+                  );
+                  if (patterns != null) {
+                    setState(() {
+                      _patterns = patterns;
+                    });
+                  }
+                },
+                icon: const Icon(Icons.settings),
+                label: const Text('Open Config'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mammoth Controller Home'),
+        title: const Text('Mammoth Controller'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final patterns = await Navigator.push<List<models.Pattern>>(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const ConfigPage(),
+                  builder: (context) => ConfigPage(
+                    currentPatterns: _patterns,
+                    onPatternsUpdated: _updatePatterns,
+                  ),
                 ),
               );
+              if (patterns != null) {
+                setState(() {
+                  _patterns = patterns;
+                });
+              }
             },
           ),
         ],
       ),
-      body: const PatternSelector(),
+      body: PatternSelector(patterns: _patterns),
     );
+  }
+
+  void _updatePatterns(List<models.Pattern> patterns) {
+    setState(() {
+      _patterns = patterns;
+    });
   }
 }

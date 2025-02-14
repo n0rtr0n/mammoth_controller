@@ -21,8 +21,8 @@ class BoolParameterWidget extends StatelessWidget {
           horizontal: 20,
           vertical: 16,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             ParameterLabel(label: parameter.label),
             Switch(
