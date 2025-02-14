@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:mammoth_controller/pattern_selector.dart';
+import 'package:mammoth_controller/config_page.dart';
 
 
 var kColorScheme = ColorScheme.fromSeed(
@@ -66,6 +67,19 @@ class HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mammoth Controller Home'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ConfigPage(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: const PatternSelector(),
     );

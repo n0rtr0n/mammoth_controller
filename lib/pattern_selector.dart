@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:mammoth_controller/config_page.dart';
 import 'package:mammoth_controller/models/parameters.dart';
 import 'package:mammoth_controller/widgets/bool_parameter.dart';
 import 'package:mammoth_controller/widgets/color_parameter.dart';
@@ -17,11 +18,23 @@ class PatternSelector extends StatefulWidget {
 
 class _PatternSelectorState extends State<PatternSelector> {
   List<Pattern> patterns = [];
-  final baseURL = 'http://127.0.0.1:8008';
+  String? baseURL;
+
+  @override 
+  void initState() {
+    super.initState();
+    _loadBaseUrl();
+  }
+
+  Future<void> _loadBaseUrl() async {
+    final url = await ConfigPage.getBaseUrl();
+    setState(() {
+      baseURL = url;
+    });
+  }
 
   Future<http.Response> _updatePattern(int index, Pattern pattern) {
     final body = jsonEncode(pattern.toJson());
-    print(body);
     return http.put(
       Uri.parse('$baseURL/patterns/${pattern.id}'),
       headers: <String, String>{
@@ -36,6 +49,7 @@ class _PatternSelectorState extends State<PatternSelector> {
       final response = await http.get(Uri.parse('$baseURL/patterns'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print(data);
 
         final Map<String, dynamic> patternsData = data['patterns'];
         final List<Pattern> fetchedPatterns = [];
