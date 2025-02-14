@@ -96,26 +96,34 @@ class _ConfigPageState extends State<ConfigPage> {
           children: [
             TextField(
               controller: _baseUrlController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Base URL',
                 hintText: 'Enter the base URL for the API',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surface,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: _saveBaseUrl,
-                  child: const Text('Save'),
+                  icon: const Icon(Icons.save),
+                  label: const Text('Save'),
                 ),
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: _resetToDefault,
-                  child: const Text('Reset to Default'),
+                  icon: const Icon(Icons.restart_alt),
+                  label: const Text('Reset'),
                 ),
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: _testConnection,
-                  child: const Text('Test Connection'),
+                  icon: const Icon(Icons.wifi),
+                  label: const Text('Test'),
                 ),
               ],
             ),

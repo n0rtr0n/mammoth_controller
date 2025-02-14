@@ -86,12 +86,11 @@ class _PatternSelectorState extends State<PatternSelector> {
                   children: [
                     Text(
                       patterns[index].label,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSecondaryContainer,
+                      ),
                     ),
-                    const SizedBox(
-                      width: 4,
-                      height: 4,
-                    ),
+                    const SizedBox(height: 12),
                     ListView.builder(
                       itemCount: parameters.length,
                       itemBuilder: (context, index) {
@@ -212,9 +211,16 @@ class FetchPatternsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onFetchPatterns,
-      child: const Text('Fetch patterns'),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ElevatedButton.icon(
+        onPressed: onFetchPatterns,
+        icon: const Icon(Icons.refresh),
+        label: const Text('Fetch Patterns'),
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 50),
+        ),
+      ),
     );
   }
 }
