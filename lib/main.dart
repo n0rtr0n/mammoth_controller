@@ -4,6 +4,7 @@ import 'package:mammoth_controller/models/pattern.dart' as models;
 
 import 'package:mammoth_controller/pattern_selector.dart';
 import 'package:mammoth_controller/config_page.dart';
+import 'package:mammoth_controller/widgets/connection_status_bar.dart';
 
 
 var kColorScheme = ColorScheme.fromSeed(
@@ -25,8 +26,36 @@ void main() {
   });
 }
 
-class MammothController extends StatelessWidget {
+class MammothController extends StatefulWidget {
   const MammothController({super.key});
+
+  @override
+  State<MammothController> createState() => _MammothControllerState();
+}
+
+class _MammothControllerState extends State<MammothController> {
+  ThemeMode _themeMode = ThemeMode.system;
+  List<models.Pattern> _patterns = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeMode();
+  }
+
+  Future<void> _loadThemeMode() async {
+    final themeMode = await ConfigPage.getThemeMode();
+    setState(() {
+      _themeMode = themeMode;
+    });
+  }
+
+  void _updateThemeMode(ThemeMode mode) {
+    setState(() {
+      _themeMode = mode;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -67,7 +96,6 @@ class MammothController extends StatelessWidget {
             fontSize: 20,
           ),
         ),
-        useMaterial3: true,
       ),
       darkTheme: ThemeData.dark().copyWith(
         colorScheme: kDarkColorScheme,
@@ -86,23 +114,41 @@ class MammothController extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomePage(),
+      themeMode: _themeMode,
+      home: HomePage(
+        onThemeChanged: _updateThemeMode,
+      ),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({
+    super.key,
+    required this.onThemeChanged,
+  });
+
+  final void Function(ThemeMode) onThemeChanged;
+
   @override
   HomePageState createState() => HomePageState();
 }
 
 class HomePageState extends State<HomePage> {
   List<models.Pattern> _patterns = [];
+  String _baseUrl = ConfigPage.defaultBaseUrl;
 
   @override
   void initState() {
     super.initState();
+    _loadBaseUrl();
+  }
+
+  Future<void> _loadBaseUrl() async {
+    final url = await ConfigPage.getBaseUrl();
+    setState(() {
+      _baseUrl = url;
+    });
   }
 
   @override
@@ -143,6 +189,7 @@ class HomePageState extends State<HomePage> {
                       builder: (context) => ConfigPage(
                         currentPatterns: _patterns,
                         onPatternsUpdated: _updatePatterns,
+                        onThemeChanged: widget.onThemeChanged,
                       ),
                     ),
                   );
@@ -174,6 +221,7 @@ class HomePageState extends State<HomePage> {
                   builder: (context) => ConfigPage(
                     currentPatterns: _patterns,
                     onPatternsUpdated: _updatePatterns,
+                    onThemeChanged: widget.onThemeChanged,
                   ),
                 ),
               );
@@ -182,11 +230,19 @@ class HomePageState extends State<HomePage> {
                   _patterns = patterns;
                 });
               }
+              _loadBaseUrl();
             },
           ),
         ],
       ),
-      body: PatternSelector(patterns: _patterns),
+      body: Column(
+        children: [
+          Expanded(
+            child: PatternSelector(patterns: _patterns),
+          ),
+          ConnectionStatusBar(baseUrl: _baseUrl),
+        ],
+      ),
     );
   }
 
