@@ -55,8 +55,13 @@ class _PatternSelectorState extends State<PatternSelector> {
       itemCount: widget.patterns.length,
       itemBuilder: (context, patternIndex) {
         final currentPattern = widget.patterns[patternIndex];
-        final parameters = [];
-        currentPattern.parameters.forEach((key, item) => parameters.add(item));
+        final parameters = <AdjustableParameter>[];
+        print('Pattern: ${currentPattern.label}');
+        print('Parameters: ${currentPattern.parameters}');
+        currentPattern.parameters?.forEach((key, item) {
+          print('Parameter item: $item');
+          parameters.add(item);
+        });
         
         return Card(
           child: StickyHeader(
@@ -87,17 +92,17 @@ class _PatternSelectorState extends State<PatternSelector> {
             ),
             content: Column(
               children: [
-                ListView.builder(
+                if (parameters.isNotEmpty) ListView.builder(
                   itemCount: parameters.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
-                    final AdjustableParameter param = parameters[index];
+                    final param = parameters[index];
                     final Widget widget;
                     if (param is FloatParameter) {
                       void onParameterUpdate(double value) {
                         setState(() {
-                          parameters[index].setValue(value);
+                          (param as FloatParameter).setValue(value);
                         });
                       }
 
@@ -108,7 +113,7 @@ class _PatternSelectorState extends State<PatternSelector> {
                     } else if (param is BoolParameter) {
                       void onParameterUpdate(bool value) {
                         setState(() {
-                          parameters[index].setValue(value);
+                          (param as BoolParameter).setValue(value);
                         });
                       }
 
@@ -119,7 +124,7 @@ class _PatternSelectorState extends State<PatternSelector> {
                     } else if (param is IntParameter) {
                       void onParameterUpdate(double value) {
                         setState(() {
-                          parameters[index].setValue(value.toInt());
+                          (param as IntParameter).setValue(value.toInt());
                         });
                       }
 
@@ -130,19 +135,19 @@ class _PatternSelectorState extends State<PatternSelector> {
                     } else if (param is ColorParameter) {
                       void onRedParameterUpdate(double value) {
                         setState(() {
-                          parameters[index].setRed(value.toInt());
+                          (param as ColorParameter).setRed(value.toInt());
                         });
                       }
 
                       void onGreenParameterUpdate(double value) {
                         setState(() {
-                          parameters[index].setGreen(value.toInt());
+                          (param as ColorParameter).setGreen(value.toInt());
                         });
                       }
 
                       void onBlueParameterUpdate(double value) {
                         setState(() {
-                          parameters[index].setBlue(value.toInt());
+                          (param as ColorParameter).setBlue(value.toInt());
                         });
                       }
 

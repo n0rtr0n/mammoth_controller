@@ -1,8 +1,11 @@
 import 'package:mammoth_controller/models/color.dart';
 
 abstract class AdjustableParameter {
-
+  String get label;
   Map<String, dynamic> toJson();
+
+  // Add a generic setValue method
+  void setValue(dynamic value);
 
   factory AdjustableParameter.fromJson(String label, Map<String, dynamic> json) {
     if (!json.containsKey('type')) {
@@ -40,14 +43,7 @@ abstract class AdjustableParameter {
 }
 
 class FloatParameter implements AdjustableParameter {
-
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      'value': value,
-    };
-  }
-
   final String label;
   final double min;
   final double max;
@@ -60,20 +56,23 @@ class FloatParameter implements AdjustableParameter {
     required this.max,
   });
 
-  setValue(double newValue) {
-    value = newValue;
+  @override
+  void setValue(dynamic newValue) {
+    if (newValue is double) {
+      value = newValue;
+    }
   }
-}
 
-class IntParameter implements AdjustableParameter {
-  
   @override
   Map<String, dynamic> toJson() {
     return {
       'value': value,
     };
   }
-  
+}
+
+class IntParameter implements AdjustableParameter {
+  @override
   final String label;
   final int min;
   final int max;
@@ -86,12 +85,12 @@ class IntParameter implements AdjustableParameter {
     required this.max,
   });
 
-  setValue(int newValue) {
-    value = newValue;
+  @override
+  void setValue(dynamic newValue) {
+    if (newValue is int) {
+      value = newValue;
+    }
   }
-}
-
-class BoolParameter implements AdjustableParameter {
 
   @override
   Map<String, dynamic> toJson() {
@@ -99,7 +98,10 @@ class BoolParameter implements AdjustableParameter {
       'value': value,
     };
   }
+}
 
+class BoolParameter implements AdjustableParameter {
+  @override
   final String label;
   bool value;
 
@@ -108,20 +110,23 @@ class BoolParameter implements AdjustableParameter {
     required this.value,
   });
 
-  setValue(bool newValue) {
-    value = newValue;
+  @override
+  void setValue(dynamic newValue) {
+    if (newValue is bool) {
+      value = newValue;
+    }
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'value': value,
+    };
   }
 }
 
 class ColorParameter implements AdjustableParameter {
-  
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      'value': value.toJson(),
-    };
-  }
-
   final String label;
   final Color value;
 
@@ -129,6 +134,18 @@ class ColorParameter implements AdjustableParameter {
     required this.label,
     required this.value,
   });
+
+  @override
+  void setValue(dynamic newValue) {
+    throw UnimplementedError('ColorParameter uses setRed/setGreen/setBlue instead');
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'value': value.toJson(),
+    };
+  }
   
   setRed(int newValue) {
     value.r = newValue;

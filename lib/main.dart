@@ -6,7 +6,6 @@ import 'package:mammoth_controller/pattern_selector.dart';
 import 'package:mammoth_controller/config_page.dart';
 import 'package:mammoth_controller/widgets/connection_status_bar.dart';
 
-
 var kColorScheme = ColorScheme.fromSeed(
   seedColor: const Color.fromARGB(255, 96, 59, 181),
   brightness: Brightness.light,
@@ -35,7 +34,6 @@ class MammothController extends StatefulWidget {
 
 class _MammothControllerState extends State<MammothController> {
   ThemeMode _themeMode = ThemeMode.system;
-  List<models.Pattern> _patterns = [];
 
   @override
   void initState() {
