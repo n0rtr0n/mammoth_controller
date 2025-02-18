@@ -135,6 +135,7 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   List<models.Pattern> _patterns = [];
   String _baseUrl = ConfigPage.defaultBaseUrl;
+  String? _currentPatternName;
 
   @override
   void initState() {
@@ -236,9 +237,19 @@ class HomePageState extends State<HomePage> {
       body: Column(
         children: [
           Expanded(
-            child: PatternSelector(patterns: _patterns),
+            child: PatternSelector(
+              patterns: _patterns,
+              onPatternUpdated: (patternName) {
+                setState(() {
+                  _currentPatternName = patternName;
+                });
+              },
+            ),
           ),
-          ConnectionStatusBar(baseUrl: _baseUrl),
+          ConnectionStatusBar(
+            baseUrl: _baseUrl,
+            currentPatternName: _currentPatternName,
+          ),
         ],
       ),
     );

@@ -6,9 +6,11 @@ class ConnectionStatusBar extends StatefulWidget {
   const ConnectionStatusBar({
     super.key,
     required this.baseUrl,
+    this.currentPatternName,
   });
 
   final String baseUrl;
+  final String? currentPatternName;
 
   static Future<bool> checkConnection(String baseUrl) async {
     try {
@@ -111,6 +113,13 @@ class _ConnectionStatusBarState extends State<ConnectionStatusBar> {
               : 'Not connected - Check configuration',
             style: Theme.of(context).textTheme.bodySmall,
           ),
+          if (widget.currentPatternName != null) ...[
+            const Spacer(),
+            Text(
+              'Current Pattern: ${widget.currentPatternName}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
         ],
       ),
     );

@@ -9,14 +9,17 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:mammoth_controller/models/pattern.dart' as models;
 import 'package:sticky_headers/sticky_headers.dart';
+import 'package:mammoth_controller/widgets/global_options.dart';
 
 class PatternSelector extends StatefulWidget {
   const PatternSelector({
     super.key,
     required this.patterns,
+    required this.onPatternUpdated,
   });
 
   final List<models.Pattern> patterns;
+  final void Function(String) onPatternUpdated;
 
   @override
   State<PatternSelector> createState() => _PatternSelectorState();
@@ -38,22 +41,30 @@ class _PatternSelectorState extends State<PatternSelector> {
     });
   }
 
-  Future<http.Response> _updatePattern(int index, models.Pattern pattern) {
-    final body = jsonEncode(pattern.toJson());
-    return http.put(
+  Future<void> _updatePattern(int index, models.Pattern pattern) async {
+    final response = await http.put(
       Uri.parse('$baseURL/patterns/${pattern.id}'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: body,
+      body: jsonEncode(pattern.toJson()),
     );
+    
+    if (response.statusCode == 200) {
+      widget.onPatternUpdated(pattern.label);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: widget.patterns.length,
-      itemBuilder: (context, patternIndex) {
+      itemCount: widget.patterns.length + 1,  // Add 1 for the GlobalOptions
+      itemBuilder: (context, index) {
+        if (index == 0) {  // First item is GlobalOptions
+          return const GlobalOptions();
+        }
+
+        final patternIndex = index - 1;  // Adjust index for patterns
         final currentPattern = widget.patterns[patternIndex];
         final parameters = <AdjustableParameter>[];
         print('Pattern: ${currentPattern.label}');
