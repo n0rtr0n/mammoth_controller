@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mammoth_controller/models/pattern.dart' as models;
+import 'package:mammoth_controller/models/pattern.dart';
 
 import 'package:mammoth_controller/pattern_selector.dart';
 import 'package:mammoth_controller/config_page.dart';
@@ -133,9 +133,10 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-  List<models.Pattern> _patterns = [];
+  PatternCollection? _patternCollection;
   String _baseUrl = ConfigPage.defaultBaseUrl;
   String? _currentPatternName;
+  String? _currentColorMaskName;
 
   @override
   void initState() {
@@ -152,7 +153,10 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_patterns.isEmpty) {
+    final patterns = _patternCollection?.patterns.values.toList() ?? [];
+    final colorMasks = _patternCollection?.colorMasks ?? {};
+
+    if (patterns.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -182,19 +186,19 @@ class HomePageState extends State<HomePage> {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () async {
-                  final patterns = await Navigator.push<List<models.Pattern>>(
+                  final newPatternCollection = await Navigator.push<PatternCollection>(
                     context,
                     MaterialPageRoute(
                       builder: (context) => ConfigPage(
-                        currentPatterns: _patterns,
+                        currentPatterns: patterns,
                         onPatternsUpdated: _updatePatterns,
                         onThemeChanged: widget.onThemeChanged,
                       ),
                     ),
                   );
-                  if (patterns != null) {
+                  if (newPatternCollection != null) {
                     setState(() {
-                      _patterns = patterns;
+                      _patternCollection = newPatternCollection;
                     });
                   }
                 },
@@ -214,19 +218,19 @@ class HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () async {
-              final patterns = await Navigator.push<List<models.Pattern>>(
+              final newPatternCollection = await Navigator.push<PatternCollection>(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ConfigPage(
-                    currentPatterns: _patterns,
+                    currentPatterns: patterns,
                     onPatternsUpdated: _updatePatterns,
                     onThemeChanged: widget.onThemeChanged,
                   ),
                 ),
               );
-              if (patterns != null) {
+              if (newPatternCollection != null) {
                 setState(() {
-                  _patterns = patterns;
+                  _patternCollection = newPatternCollection;
                 });
               }
               _loadBaseUrl();
@@ -238,10 +242,16 @@ class HomePageState extends State<HomePage> {
         children: [
           Expanded(
             child: PatternSelector(
-              patterns: _patterns,
+              patterns: patterns,
+              colorMasks: colorMasks,
               onPatternUpdated: (patternName) {
                 setState(() {
                   _currentPatternName = patternName;
+                });
+              },
+              onColorMaskUpdated: (maskName) {
+                setState(() {
+                  _currentColorMaskName = maskName;
                 });
               },
             ),
@@ -249,15 +259,16 @@ class HomePageState extends State<HomePage> {
           ConnectionStatusBar(
             baseUrl: _baseUrl,
             currentPatternName: _currentPatternName,
+            currentColorMaskName: _currentColorMaskName,
           ),
         ],
       ),
     );
   }
 
-  void _updatePatterns(List<models.Pattern> patterns) {
+  void _updatePatterns(PatternCollection patternCollection) {
     setState(() {
-      _patterns = patterns;
+      _patternCollection = patternCollection;
     });
   }
 }

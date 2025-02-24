@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:mammoth_controller/models/pattern.dart' as models;
+import 'package:mammoth_controller/models/pattern.dart';
 import 'package:mammoth_controller/widgets/connection_status_bar.dart';
 
 /// Represents a preset URL with a label for the dropdown
@@ -21,8 +21,8 @@ class ConfigPage extends StatefulWidget {
     required this.onThemeChanged,
   });
 
-  final List<models.Pattern> currentPatterns;
-  final Function(List<models.Pattern>) onPatternsUpdated;
+  final List<Pattern> currentPatterns;
+  final Function(PatternCollection) onPatternsUpdated;
   final Function(ThemeMode) onThemeChanged;
 
   // Constants
@@ -61,6 +61,7 @@ class _ConfigPageState extends State<ConfigPage> {
   late ThemeMode _currentThemeMode;
   bool _isLoadingTheme = true;
   bool _isCustomUrl = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -142,30 +143,56 @@ class _ConfigPageState extends State<ConfigPage> {
     }
   }
 
-  Future<void> _fetchPatterns() async {
+  Future<PatternCollection?> fetchPatterns(String baseUrl) async {
     try {
+      print('Fetching patterns from $baseUrl/patterns');
       final response = await http.get(
-        Uri.parse('${_baseUrlController.text}/patterns'),
-      );
+        Uri.parse('$baseUrl/patterns'),
+      ).timeout(const Duration(seconds: 10));
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final Map<String, dynamic> patternsData = data['patterns'];
-        final List<models.Pattern> fetchedPatterns = [];
-        patternsData.forEach((key, pattern) {
-          fetchedPatterns.add(models.Pattern.fromJson(key, pattern));
-        });
-
-        widget.onPatternsUpdated(fetchedPatterns);
-        if (!mounted) return;
-        Navigator.pop(context, fetchedPatterns);
-      } else {
-        throw Exception('Failed to fetch patterns');
+        print('Decoded JSON: $data');
+        
+        try {
+          final collection = PatternCollection.fromJson(data);
+          print('Successfully created PatternCollection');
+          print('Patterns: ${collection.patterns.length}');
+          print('Color Masks: ${collection.colorMasks.length}');
+          return collection;
+        } catch (e) {
+          print('Error creating PatternCollection: $e');
+          return null;
+        }
       }
+      return null;
     } catch (e) {
-      setState(() {
-        _testResult = 'Error: Failed to fetch patterns: $e';
-      });
+      print('Error fetching patterns: $e');
+      return null;
     }
+  }
+
+  Future<void> _fetchPatterns() async {
+    setState(() {
+      _isLoading = true;
+      _testResult = 'Fetching patterns...';
+    });
+
+    final patternCollection = await fetchPatterns(_baseUrlController.text);
+
+    setState(() {
+      _isLoading = false;
+      if (patternCollection != null) {
+        widget.onPatternsUpdated(patternCollection);
+        _testResult = 'Success: Patterns fetched successfully';
+        Navigator.pop(context, patternCollection);
+      } else {
+        _testResult = 'Error: Failed to fetch patterns';
+      }
+    });
   }
 
   Future<void> _loadThemeMode() async {
@@ -282,9 +309,15 @@ class _ConfigPageState extends State<ConfigPage> {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: _fetchPatterns,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Fetch Patterns'),
+                onPressed: _isLoading ? null : _fetchPatterns,
+                icon: _isLoading 
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(),
+                    )
+                  : const Icon(Icons.refresh),
+                label: Text(_isLoading ? 'Fetching...' : 'Fetch Patterns'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                 ),

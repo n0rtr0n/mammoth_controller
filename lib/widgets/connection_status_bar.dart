@@ -6,11 +6,13 @@ class ConnectionStatusBar extends StatefulWidget {
   const ConnectionStatusBar({
     super.key,
     required this.baseUrl,
-    this.currentPatternName,
+    required this.currentPatternName,
+    required this.currentColorMaskName,
   });
 
   final String baseUrl;
   final String? currentPatternName;
+  final String? currentColorMaskName;
 
   static Future<bool> checkConnection(String baseUrl) async {
     try {
@@ -94,32 +96,24 @@ class _ConnectionStatusBarState extends State<ConnectionStatusBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
+            width: 1,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _isConnected ? Colors.green : Colors.red,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            _isConnected 
-              ? 'Connected to API'
-              : 'Not connected - Check configuration',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          if (widget.currentPatternName != null) ...[
-            const Spacer(),
-            Text(
-              'Current Pattern: ${widget.currentPatternName}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
+          Text('Server URL: ${widget.baseUrl}'),
+          if (widget.currentPatternName != null)
+            Text('Current Pattern: ${widget.currentPatternName}'),
+          if (widget.currentColorMaskName != null)
+            Text('Current Color Mask: ${widget.currentColorMaskName}'),
         ],
       ),
     );

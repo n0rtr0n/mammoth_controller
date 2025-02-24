@@ -8,36 +8,44 @@ abstract class AdjustableParameter {
   void setValue(dynamic value);
 
   factory AdjustableParameter.fromJson(String label, Map<String, dynamic> json) {
+    print('Creating parameter for label: $label with json: $json'); // Debug log
+
     if (!json.containsKey('type')) {
+      print('Parameter missing type: $json'); // Debug log
       throw Exception('Adjustable parameter does not have a type');
     }
     final type = json['type'];
 
-    switch (type) {
-      case 'int':
-        final value = json['value'];
-        final int min = json['min'];
-        final int max = json['max'];
-        return IntParameter(label: label, value: value, min: min, max: max);
-      case 'float':
-        final double value = json['value'].toDouble();
-        final double min = json['min'].toDouble();
-        final double max = json['max'].toDouble();
-        return FloatParameter(label: label, value: value, min: min, max: max);
-      case 'bool':
-        final bool value = json['value'];
-        return BoolParameter(label: label, value: value);
-      case 'color':
-        final color = json['value'];
-        final Color value = Color(
-          r: color['r'],
-          b: color['b'],
-          g: color['g'],
-        );
-        return ColorParameter(label: label, value: value);
-      default:
-        print(type);
-        throw Exception('Invalid type for AdjustableParameter found');
+    try {
+      switch (type) {
+        case 'int':
+          final value = json['value'] as int;
+          final min = json['min'] as int;
+          final max = json['max'] as int;
+          return IntParameter(label: label, value: value, min: min, max: max);
+        case 'float':
+          final value = (json['value'] as num).toDouble();
+          final min = (json['min'] as num).toDouble();
+          final max = (json['max'] as num).toDouble();
+          return FloatParameter(label: label, value: value, min: min, max: max);
+        case 'bool':
+          final value = json['value'] as bool;
+          return BoolParameter(label: label, value: value);
+        case 'color':
+          final color = json['value'] as Map<String, dynamic>;
+          final Color value = Color(
+            r: color['r'] as int,
+            b: color['b'] as int,
+            g: color['g'] as int,
+          );
+          return ColorParameter(label: label, value: value);
+        default:
+          print('Unknown parameter type: $type'); // Debug log
+          throw Exception('Invalid type for AdjustableParameter found: $type');
+      }
+    } catch (e) {
+      print('Error parsing parameter $label: $e'); // Debug log
+      rethrow;
     }
   }
 }

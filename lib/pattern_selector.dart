@@ -15,11 +15,15 @@ class PatternSelector extends StatefulWidget {
   const PatternSelector({
     super.key,
     required this.patterns,
+    required this.colorMasks,
     required this.onPatternUpdated,
+    required this.onColorMaskUpdated,
   });
 
   final List<models.Pattern> patterns;
+  final Map<String, models.Pattern> colorMasks;
   final void Function(String) onPatternUpdated;
+  final void Function(String) onColorMaskUpdated;
 
   @override
   State<PatternSelector> createState() => _PatternSelectorState();
@@ -61,7 +65,10 @@ class _PatternSelectorState extends State<PatternSelector> {
       itemCount: widget.patterns.length + 1,  // Add 1 for the GlobalOptions
       itemBuilder: (context, index) {
         if (index == 0) {  // First item is GlobalOptions
-          return const GlobalOptions();
+          return GlobalOptions(
+            colorMasks: widget.colorMasks,
+            onColorMaskUpdated: widget.onColorMaskUpdated,
+          );
         }
 
         final patternIndex = index - 1;  // Adjust index for patterns

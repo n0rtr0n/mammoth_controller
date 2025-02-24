@@ -3,42 +3,67 @@ import 'package:mammoth_controller/models/parameters.dart';
 class Pattern {
   final String id;
   final String label;
-  final Map<String,AdjustableParameter> parameters;
+  final Map<String, AdjustableParameter>? parameters;
 
   Pattern({
     required this.id,
     required this.label,
-    required this.parameters,
+    this.parameters,
   });
 
-  factory Pattern.fromJson(key, Map<String, dynamic> json) {
+  Map<String, dynamic> toJson() {
+    return {
+      'parameters': parameters?.map(
+        (key, value) => MapEntry(key, value.toJson()),
+      ),
+    };
+  }
 
-    final Map<String,AdjustableParameter> parameters = {};
-
-    json['parameters'].forEach((k, parameter) {
-      try {
-        parameters[k] = AdjustableParameter.fromJson(k, parameter);
-      } catch (e){
-        print(e);
-      }
-    });
-
-    final label = json['label'];
+  factory Pattern.fromJson(String id, Map<String, dynamic> json) {
+    final parameters = <String, AdjustableParameter>{};
+    
+    if (json['parameters'] != null) {
+      (json['parameters'] as Map<String, dynamic>).forEach((key, value) {
+        parameters[key] = AdjustableParameter.fromJson(key, value);
+      });
+    }
 
     return Pattern(
-      id: key,
-      label: label,
+      id: id,
+      label: json['label'],
       parameters: parameters,
     );
   }
+}
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> params = {};
-    parameters.forEach((key, param) {
-      params[key] = param.toJson();
-    });
-    return {
-      'parameters': params,
-    };
+class PatternCollection {
+  final Map<String, Pattern> patterns;
+  final Map<String, Pattern> colorMasks;
+
+  PatternCollection({
+    required this.patterns,
+    required this.colorMasks,
+  });
+
+  factory PatternCollection.fromJson(Map<String, dynamic> json) {
+    final patterns = <String, Pattern>{};
+    final colorMasks = <String, Pattern>{};
+
+    if (json['patterns'] != null) {
+      (json['patterns'] as Map<String, dynamic>).forEach((key, value) {
+        patterns[key] = Pattern.fromJson(key, value);
+      });
+    }
+
+    if (json['colorMasks'] != null) {
+      (json['colorMasks'] as Map<String, dynamic>).forEach((key, value) {
+        colorMasks[key] = Pattern.fromJson(key, value);
+      });
+    }
+
+    return PatternCollection(
+      patterns: patterns,
+      colorMasks: colorMasks,
+    );
   }
 }
