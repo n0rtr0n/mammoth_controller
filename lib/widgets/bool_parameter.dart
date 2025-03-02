@@ -15,22 +15,18 @@ class BoolParameterWidget extends StatelessWidget {
 
   @override
   Widget build(Object context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 16,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            ParameterLabel(label: parameter.label),
-            Switch(
-              value: parameter.value,
-              onChanged: onParameterUpdate,
-            ),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: ParameterLabel(label: parameter.label),
+          ),
+          Switch(
+            value: parameter.value,
+            onChanged: onParameterUpdate,
+          ),
+        ],
       ),
     );
   }

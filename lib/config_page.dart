@@ -211,6 +211,16 @@ class _ConfigPageState extends State<ConfigPage> {
     widget.onThemeChanged(mode);
   }
 
+  void _onUrlChanged(String? value) {
+    setState(() {
+      _isCustomUrl = value == null;
+      if (!_isCustomUrl) {
+        _baseUrlController.text = value!;
+        _saveBaseUrl(); // Automatically save when URL is selected from dropdown
+      }
+    });
+  }
+
   @override
   void dispose() {
     _baseUrlController.dispose();
@@ -246,12 +256,7 @@ class _ConfigPageState extends State<ConfigPage> {
             ),
           ],
           onChanged: (String? value) {
-            setState(() {
-              _isCustomUrl = value == null;
-              if (!_isCustomUrl) {
-                _baseUrlController.text = value!;
-              }
-            });
+            _onUrlChanged(value);
           },
         ),
         if (_isCustomUrl) ...[
@@ -267,6 +272,10 @@ class _ConfigPageState extends State<ConfigPage> {
               filled: true,
               fillColor: Theme.of(context).colorScheme.surface,
             ),
+            onEditingComplete: () {
+              _saveBaseUrl(); // Save when user finishes editing custom URL
+              FocusScope.of(context).unfocus(); // Hide keyboard
+            },
           ),
         ],
       ],
@@ -290,11 +299,6 @@ class _ConfigPageState extends State<ConfigPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: _saveBaseUrl,
-                    icon: const Icon(Icons.save),
-                    label: const Text('Save'),
-                  ),
                   ElevatedButton.icon(
                     onPressed: _resetToDefault,
                     icon: const Icon(Icons.restart_alt),

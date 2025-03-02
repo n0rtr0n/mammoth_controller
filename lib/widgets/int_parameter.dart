@@ -17,34 +17,32 @@ class IntParameterWidget extends StatelessWidget {
 
   @override
   Widget build(Object context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 14,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ParameterLabel(label: parameter.label),
-            Row(
-              children: [
-                Text(
-                  parameter.value.toInt().toString(),
-                ),
-                Expanded(
-                  child: Slider(
-                    value: parameter.value.toDouble(),
-                    onChanged: onParameterUpdate,
-                    min: parameter.min.toDouble(),
-                    max: parameter.max.toDouble(),
-                    divisions: parameter.max - parameter.min,
-                  ),
-                ),
-              ], 
-            )
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: ParameterLabel(label: parameter.label),
+          ),
+          SizedBox(
+            width: 50,
+            child: Text(
+              parameter.value.toString(),
+              textAlign: TextAlign.right,
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Slider(
+              value: parameter.value.toDouble(),
+              onChanged: onParameterUpdate,
+              min: parameter.min.toDouble(),
+              max: parameter.max.toDouble(),
+              divisions: parameter.max - parameter.min,
+            ),
+          ),
+        ],
       ),
     );
   }

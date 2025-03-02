@@ -61,7 +61,7 @@ class _ConnectionStatusBarState extends State<ConnectionStatusBar> {
     _timeoutTimer?.cancel();
     
     _heartbeatTimer = Timer.periodic(
-      const Duration(seconds: 10),
+      const Duration(seconds: 5),
       (_) => _checkConnection(),
     );
     
@@ -106,14 +106,31 @@ class _ConnectionStatusBarState extends State<ConnectionStatusBar> {
           ),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text('Server URL: ${widget.baseUrl}'),
-          if (widget.currentPatternName != null)
-            Text('Current Pattern: ${widget.currentPatternName}'),
-          if (widget.currentColorMaskName != null)
-            Text('Current Color Mask: ${widget.currentColorMaskName}'),
+          // Connection status indicator
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: _isConnected ? Colors.green : Colors.red,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          
+          // Status text
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (widget.currentPatternName != null)
+                  Text('Current Pattern: ${widget.currentPatternName}'),
+                if (widget.currentColorMaskName != null)
+                  Text('Current Color Mask: ${widget.currentColorMaskName}'),
+              ],
+            ),
+          ),
         ],
       ),
     );
