@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 import 'package:mammoth_controller/models/parameters.dart';
 import 'package:mammoth_controller/widgets/parameter_label.dart';

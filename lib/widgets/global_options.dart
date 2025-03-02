@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:mammoth_controller/config_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mammoth_controller/models/pattern.dart';
-import 'package:mammoth_controller/models/parameters.dart';
-import 'package:mammoth_controller/widgets/bool_parameter.dart';
-import 'package:mammoth_controller/widgets/color_parameter.dart';
-import 'package:mammoth_controller/widgets/float_parameter.dart';
-import 'package:mammoth_controller/widgets/int_parameter.dart';
+import 'package:mammoth_controller/models/options.dart';
 
 class GlobalOptions extends StatefulWidget {
   const GlobalOptions({
@@ -16,7 +8,6 @@ class GlobalOptions extends StatefulWidget {
     required this.onTransitionUpdated,
   });
 
-  static const String transitionDurationKey = 'transition_duration';
   final VoidCallback onTransitionUpdated;
 
   @override
@@ -24,30 +15,15 @@ class GlobalOptions extends StatefulWidget {
 }
 
 class _GlobalOptionsState extends State<GlobalOptions> {
-  double _transitionDuration = 0;
   String? _baseUrl;
-  late SharedPreferences _prefs;
+  bool _isLoading = true;
+  Options? _options;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _initPrefs();
-  }
-
-  Future<void> _initPrefs() async {
-    _prefs = await SharedPreferences.getInstance();
     _loadBaseUrl();
-    _loadTransitionSettings();
-  }
-
-  Future<void> _loadTransitionSettings() async {
-    setState(() {
-      _transitionDuration = _prefs.getDouble(GlobalOptions.transitionDurationKey) ?? 0;
-    });
-  }
-
-  Future<void> _saveTransitionSettings() async {
-    await _prefs.setDouble(GlobalOptions.transitionDurationKey, _transitionDuration);
   }
 
   Future<void> _loadBaseUrl() async {
@@ -55,47 +31,170 @@ class _GlobalOptionsState extends State<GlobalOptions> {
     setState(() {
       _baseUrl = url;
     });
+    _fetchOptions();
   }
 
-  Future<void> _updateTransition() async {
+  Future<void> _fetchOptions() async {
     if (_baseUrl == null) return;
 
-    try {
-      final response = await http.put(
-        Uri.parse('$_baseUrl/transition'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'duration': _transitionDuration.toInt(),
-          'enabled': true,  // Always set to true
-        }),
-      );
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-      if (response.statusCode == 200) {
-        await _saveTransitionSettings();
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to update transition settings'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    try {
+      final options = await Options.fetchOptions();
+      setState(() {
+        _options = options;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load options: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _updateOption(String optionId, dynamic value) async {
+    if (_baseUrl == null || _options == null) return;
+
+    try {
+      await Options.updateOption(_baseUrl!, optionId, value);
+      
+      // Update local state
+      setState(() {
+        _options!.options[optionId]?.value = value;
+      });
+      
+      widget.onTransitionUpdated();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error updating transition settings'),
+        SnackBar(
+          content: Text('Failed to update option: $e'),
           backgroundColor: Colors.red,
         ),
       );
     }
   }
 
+  Widget _buildDurationOption(Option option, bool enabled) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          option.label,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: enabled 
+                ? null 
+                : Theme.of(context).disabledColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: Slider(
+                value: option.value.toDouble(),
+                min: option.min?.toDouble() ?? 0,
+                max: option.max?.toDouble() ?? 10000,
+                divisions: ((option.max ?? 10000) ~/ 100),
+                label: '${option.value}ms',
+                onChanged: enabled 
+                    ? (value) {
+                        setState(() {
+                          option.value = value.toInt();
+                        });
+                      }
+                    : null,
+                onChangeEnd: enabled 
+                    ? (value) {
+                        _updateOption(option.id, value.toInt());
+                      }
+                    : null,
+              ),
+            ),
+            SizedBox(
+              width: 80,
+              child: Text(
+                '${option.value}ms',
+                textAlign: TextAlign.end,
+                style: TextStyle(
+                  color: enabled 
+                      ? null 
+                      : Theme.of(context).disabledColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBooleanOption(Option option) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            option.label,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        Switch(
+          value: option.value,
+          onChanged: (value) {
+            setState(() {
+              option.value = value;
+            });
+            _updateOption(option.id, value);
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Text(
+                'Error',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(_errorMessage!),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _fetchOptions,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final options = _options?.options ?? {};
+    final patternTransitionEnabled = options['patternTransitionEnabled']?.value ?? false;
+    final colorMaskTransitionEnabled = options['colorMaskTransitionEnabled']?.value ?? false;
+    
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -107,39 +206,28 @@ class _GlobalOptionsState extends State<GlobalOptions> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-            Text(
-              'Transition Time',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Slider(
-                    value: _transitionDuration,
-                    min: 0,
-                    max: 20000,
-                    divisions: 40,
-                    label: '${_transitionDuration.toInt()}ms',
-                    onChanged: (value) {
-                      setState(() {
-                        _transitionDuration = value;
-                      });
-                    },
-                    onChangeEnd: (value) {
-                      _updateTransition();
-                    },
-                  ),
-                ),
-                SizedBox(
-                  width: 80,
-                  child: Text(
-                    '${_transitionDuration.toInt()}ms',
-                    textAlign: TextAlign.end,
-                  ),
-                ),
-              ],
-            ),
+            
+            // Pattern Transition Options
+            if (options.containsKey('patternTransitionEnabled'))
+              _buildBooleanOption(options['patternTransitionEnabled']!),
+            
+            if (options.containsKey('patternTransitionDuration'))
+              _buildDurationOption(
+                options['patternTransitionDuration']!, 
+                patternTransitionEnabled
+              ),
+            
+            const SizedBox(height: 16),
+            
+            // Color Mask Transition Options
+            if (options.containsKey('colorMaskTransitionEnabled'))
+              _buildBooleanOption(options['colorMaskTransitionEnabled']!),
+            
+            if (options.containsKey('colorMaskTransitionDuration'))
+              _buildDurationOption(
+                options['colorMaskTransitionDuration']!,
+                colorMaskTransitionEnabled
+              ),
           ],
         ),
       ),

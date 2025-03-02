@@ -348,7 +348,9 @@ class _ConfigPageState extends State<ConfigPage> {
               ),
               const Text(
                 '• Make sure you are connected to the Mammoth WiFi\n'
-                '• Hard-close and re-open the app if you are having issues',
+                '• Hard-close and re-open the app if you are having issues\n'
+                '• Color masks apply to all patterns\n'
+                '• To apply changes, make the change and press "update"\n',
                 style: TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 24),
