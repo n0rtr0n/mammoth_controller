@@ -9,7 +9,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:mammoth_controller/models/pattern.dart' as models;
 import 'package:mammoth_controller/widgets/global_options.dart';
-import 'package:mammoth_controller/models/options.dart';
 
 class PatternSelector extends StatefulWidget {
   const PatternSelector({
@@ -81,47 +80,6 @@ class _PatternSelectorState extends State<PatternSelector> with SingleTickerProv
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error updating pattern'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  Future<void> _selectPattern(String id) async {
-    if (baseURL == null) return;
-    
-    try {
-      // Get transition options
-      final options = await Options.fetchOptions();
-      final transitionEnabled = options.options['patternTransitionEnabled']?.value ?? false;
-      final transitionDuration = options.options['patternTransitionDuration']?.value ?? 0;
-      
-      final response = await http.post(
-        Uri.parse('$baseURL/patterns/select/$id'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'transitionDuration': transitionEnabled ? transitionDuration : 0,
-        }),
-      );
-      
-      if (response.statusCode == 200) {
-        widget.onPatternUpdated('Selected pattern');
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to select pattern'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error selecting pattern'),
           backgroundColor: Colors.red,
         ),
       );
@@ -389,47 +347,6 @@ class _PatternSelectorState extends State<PatternSelector> with SingleTickerProv
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error updating color mask'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  Future<void> _selectColorMask(String id) async {
-    if (baseURL == null) return;
-    
-    try {
-      // Get transition options
-      final options = await Options.fetchOptions();
-      final transitionEnabled = options.options['colorMaskTransitionEnabled']?.value ?? false;
-      final transitionDuration = options.options['colorMaskTransitionDuration']?.value ?? 0;
-      
-      final response = await http.post(
-        Uri.parse('$baseURL/colorMasks/select/$id'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'transitionDuration': transitionEnabled ? transitionDuration : 0,
-        }),
-      );
-      
-      if (response.statusCode == 200) {
-        widget.onColorMaskUpdated('Selected color mask');
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to select color mask'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error selecting color mask'),
           backgroundColor: Colors.red,
         ),
       );

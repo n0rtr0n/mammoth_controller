@@ -8,7 +8,6 @@ abstract class AdjustableParameter {
   void setValue(dynamic value);
 
   factory AdjustableParameter.fromJson(String label, Map<String, dynamic> json) {
-    print('Creating parameter for label: $label with json: $json'); // Debug log
 
     if (!json.containsKey('type')) {
       print('Parameter missing type: $json'); // Debug log

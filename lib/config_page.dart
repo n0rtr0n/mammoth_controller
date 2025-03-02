@@ -150,18 +150,11 @@ class _ConfigPageState extends State<ConfigPage> {
         Uri.parse('$baseUrl/patterns'),
       ).timeout(const Duration(seconds: 10));
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('Decoded JSON: $data');
         
         try {
           final collection = PatternCollection.fromJson(data);
-          print('Successfully created PatternCollection');
-          print('Patterns: ${collection.patterns.length}');
-          print('Color Masks: ${collection.colorMasks.length}');
           return collection;
         } catch (e) {
           print('Error creating PatternCollection: $e');
@@ -347,10 +340,11 @@ class _ConfigPageState extends State<ConfigPage> {
                 ),
               ),
               const Text(
-                '• Make sure you are connected to the Mammoth WiFi\n'
-                '• Hard-close and re-open the app if you are having issues\n'
-                '• Color masks apply to all patterns\n'
-                '• To apply changes, make the change and press "update"\n',
+                '• Make sure you are connected to the Mammoth WiFi!\n'
+                '• If you are having issues, hard-close and re-open the app\n'
+                '• Color masks and patterns are controlled separately, but work together to create unique effects. Try both!\n'
+                '• Changes do not apply until you press "update"\n'
+                '• Not sure what to do? Try "random" to rotate through patterns and color masks',  
                 style: TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 24),
