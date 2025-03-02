@@ -19,6 +19,8 @@ class _GlobalOptionsState extends State<GlobalOptions> {
   bool _isLoading = true;
   Options? _options;
   String? _errorMessage;
+  bool patternTransitionEnabled = false;
+  bool colorMaskTransitionEnabled = false;
 
   @override
   void initState() {
@@ -79,82 +81,6 @@ class _GlobalOptionsState extends State<GlobalOptions> {
     }
   }
 
-  Widget _buildDurationOption(Option option, bool enabled) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          option.label,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: enabled 
-                ? null 
-                : Theme.of(context).disabledColor,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: Slider(
-                value: option.value.toDouble(),
-                min: option.min?.toDouble() ?? 0,
-                max: option.max?.toDouble() ?? 10000,
-                divisions: ((option.max ?? 10000) ~/ 100),
-                label: '${option.value}ms',
-                onChanged: enabled 
-                    ? (value) {
-                        setState(() {
-                          option.value = value.toInt();
-                        });
-                      }
-                    : null,
-                onChangeEnd: enabled 
-                    ? (value) {
-                        _updateOption(option.id, value.toInt());
-                      }
-                    : null,
-              ),
-            ),
-            SizedBox(
-              width: 80,
-              child: Text(
-                '${option.value}ms',
-                textAlign: TextAlign.end,
-                style: TextStyle(
-                  color: enabled 
-                      ? null 
-                      : Theme.of(context).disabledColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBooleanOption(Option option) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            option.label,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ),
-        Switch(
-          value: option.value,
-          onChanged: (value) {
-            setState(() {
-              option.value = value;
-            });
-            _updateOption(option.id, value);
-          },
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -192,8 +118,6 @@ class _GlobalOptionsState extends State<GlobalOptions> {
     }
 
     final options = _options?.options ?? {};
-    final patternTransitionEnabled = options['patternTransitionEnabled']?.value ?? false;
-    final colorMaskTransitionEnabled = options['colorMaskTransitionEnabled']?.value ?? false;
     
     return Card(
       child: Padding(
@@ -207,29 +131,188 @@ class _GlobalOptionsState extends State<GlobalOptions> {
             ),
             const SizedBox(height: 16),
             
-            // Pattern Transition Options
-            if (options.containsKey('patternTransitionEnabled'))
-              _buildBooleanOption(options['patternTransitionEnabled']!),
-            
-            if (options.containsKey('patternTransitionDuration'))
-              _buildDurationOption(
-                options['patternTransitionDuration']!, 
-                patternTransitionEnabled
-              ),
-            
-            const SizedBox(height: 16),
-            
-            // Color Mask Transition Options
-            if (options.containsKey('colorMaskTransitionEnabled'))
-              _buildBooleanOption(options['colorMaskTransitionEnabled']!),
-            
-            if (options.containsKey('colorMaskTransitionDuration'))
-              _buildDurationOption(
-                options['colorMaskTransitionDuration']!,
-                colorMaskTransitionEnabled
-              ),
+            // Build all options dynamically
+            ...options.entries.map((entry) {
+              final option = entry.value;
+              switch (option.type) {
+                case 'boolean':
+                  return _buildBooleanOption(option);
+                case 'duration':
+                  return _buildDurationOption(option);
+                case 'float':
+                  return _buildFloatOption(option);
+                case 'int':
+                  return _buildIntOption(option);
+                default:
+                  return const SizedBox.shrink(); // Skip unknown option types
+              }
+            }),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFloatOption(Option option) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            option.label,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Slider(
+                  value: option.value.toDouble(),
+                  min: option.min?.toDouble() ?? 0,
+                  max: option.max?.toDouble() ?? 100,
+                  divisions: ((option.max ?? 100) - (option.min ?? 0)).toInt(),
+                  label: option.value.toString(),
+                  onChanged: (value) {
+                    setState(() {
+                      option.value = value;
+                    });
+                  },
+                  onChangeEnd: (value) {
+                    _updateOption(option.id, value);
+                  },
+                ),
+              ),
+              SizedBox(
+                width: 80,
+                child: Text(
+                  option.value.toStringAsFixed(1),
+                  textAlign: TextAlign.end,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIntOption(Option option) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            option.label,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Slider(
+                  value: option.value.toDouble(),
+                  min: option.min?.toDouble() ?? 0,
+                  max: option.max?.toDouble() ?? 100,
+                  divisions: ((option.max ?? 100) - (option.min ?? 0)).toInt(),
+                  label: option.value.toString(),
+                  onChanged: (value) {
+                    setState(() {
+                      option.value = value.round();
+                    });
+                  },
+                  onChangeEnd: (value) {
+                    _updateOption(option.id, value.round());
+                  },
+                ),
+              ),
+              SizedBox(
+                width: 80,
+                child: Text(
+                  option.value.toString(),
+                  textAlign: TextAlign.end,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBooleanOption(Option option) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              option.label,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          Switch(
+            value: option.value,
+            onChanged: (value) {
+              setState(() {
+                option.value = value;
+                
+                // Update dependent variables
+                if (option.id == 'patternTransitionEnabled') {
+                  patternTransitionEnabled = value;
+                } else if (option.id == 'colorMaskTransitionEnabled') {
+                  colorMaskTransitionEnabled = value;
+                }
+              });
+              _updateOption(option.id, value);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDurationOption(Option option) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            option.label,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Slider(
+                  value: option.value.toDouble(),
+                  min: option.min?.toDouble() ?? 0,
+                  max: option.max?.toDouble() ?? 10000,
+                  divisions: ((option.max ?? 10000) - (option.min ?? 0)).toInt() ~/ 100,
+                  label: '${(option.value / 1000).toStringAsFixed(1)}s',
+                  onChanged: (value) {
+                    setState(() {
+                      option.value = value;
+                    });
+                  },
+                  onChangeEnd: (value) {
+                    _updateOption(option.id, value);
+                  },
+                ),
+              ),
+              SizedBox(
+                width: 80,
+                child: Text(
+                  '${(option.value / 1000).toStringAsFixed(1)}s',
+                  textAlign: TextAlign.end,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

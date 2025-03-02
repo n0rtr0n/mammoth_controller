@@ -82,6 +82,22 @@ class ColorParameterWidget extends StatelessWidget {
             icon: const Icon(Icons.edit, size: 20),
             onPressed: () => _showColorPicker(context),
           ),
+          IconButton(
+            icon: const Icon(Icons.shuffle, size: 20),
+            tooltip: 'Random Color',
+            onPressed: () {
+              final random = Random();
+              final randomColor = Color.fromRGBO(
+                random.nextInt(256),
+                random.nextInt(256),
+                random.nextInt(256),
+                1,
+              );
+              onRedParameterUpdate(randomColor.r.toDouble());
+              onGreenParameterUpdate(randomColor.g.toDouble());
+              onBlueParameterUpdate(randomColor.b.toDouble());
+            },
+          ),
         ],
       ),
     );

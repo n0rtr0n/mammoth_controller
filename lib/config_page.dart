@@ -152,7 +152,7 @@ class _ConfigPageState extends State<ConfigPage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
+
         try {
           final collection = PatternCollection.fromJson(data);
           return collection;
@@ -343,6 +343,7 @@ class _ConfigPageState extends State<ConfigPage> {
                 '• Make sure you are connected to the Mammoth WiFi!\n'
                 '• If you are having issues, hard-close and re-open the app\n'
                 '• Color masks and patterns are controlled separately, but work together to create unique effects. Try both!\n'
+                '• "Color Mask" is a special pattern that only plays the color mask\n'
                 '• Changes do not apply until you press "update"\n'
                 '• Not sure what to do? Try "random" to rotate through patterns and color masks',  
                 style: TextStyle(fontSize: 14),
