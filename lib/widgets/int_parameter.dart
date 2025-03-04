@@ -38,7 +38,6 @@ class IntParameterWidget extends StatelessWidget {
               onChanged: onParameterUpdate,
               min: parameter.min.toDouble(),
               max: parameter.max.toDouble(),
-              divisions: parameter.max - parameter.min,
             ),
           ),
         ],

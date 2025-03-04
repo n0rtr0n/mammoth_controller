@@ -30,7 +30,7 @@ class ConfigPage extends StatefulWidget {
   static const themeModeKey = 'theme_mode';
   
   // URL Configuration
-  static const mammothUrl = 'http://192.168.1.69:8008';
+  static const mammothUrl = 'http://192.168.111.169:8008';
   static const localUrl = 'http://127.0.0.1:8008';
   static const defaultBaseUrl = mammothUrl;
   
@@ -264,10 +264,22 @@ class _ConfigPageState extends State<ConfigPage> {
               ),
               filled: true,
               fillColor: Theme.of(context).colorScheme.surface,
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.save),
+                tooltip: 'Save URL',
+                onPressed: _saveBaseUrl,
+              ),
             ),
             onEditingComplete: () {
               _saveBaseUrl(); // Save when user finishes editing custom URL
               FocusScope.of(context).unfocus(); // Hide keyboard
+            },
+            onChanged: (value) {
+              // Optional: You could add debounced auto-save here
+              // For now, we'll rely on the save button and onEditingComplete
+            },
+            onSubmitted: (value) {
+              _saveBaseUrl();
             },
           ),
         ],

@@ -20,13 +20,37 @@ class Option {
   });
 
   factory Option.fromJson(Map<String, dynamic> json) {
+    // Handle type conversion for min and max values
+    int? min, max;
+    
+    if (json['min'] != null) {
+      min = json['min'] is int ? json['min'] : json['min'].toInt();
+    }
+    
+    if (json['max'] != null) {
+      max = json['max'] is int ? json['max'] : json['max'].toInt();
+    }
+    
+    // Handle value based on type
+    dynamic value = json['value'];
+    final type = json['type'];
+    
+    // Ensure correct type for value based on option type
+    if (type == 'float' || type == 'duration') {
+      value = value is double ? value : value.toDouble();
+    } else if (type == 'int') {
+      value = value is int ? value : value.toInt();
+    } else if (type == 'boolean' || type == 'bool') {
+      value = value is bool ? value : (value == 1 || value == '1' || value == 'true');
+    }
+    
     return Option(
       id: json['id'],
       label: json['label'],
       type: json['type'],
-      value: json['value'],
-      min: json['min'],
-      max: json['max'],
+      value: value,
+      min: min,
+      max: max,
     );
   }
 

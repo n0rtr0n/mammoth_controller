@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mammoth_controller/config_page.dart';
 import 'package:mammoth_controller/models/options.dart';
+import 'package:mammoth_controller/models/parameters.dart';
+import 'package:mammoth_controller/widgets/float_parameter.dart';
 
 class GlobalOptions extends StatefulWidget {
   const GlobalOptions({
@@ -171,7 +173,6 @@ class _GlobalOptionsState extends State<GlobalOptions> {
                   value: option.value.toDouble(),
                   min: option.min?.toDouble() ?? 0,
                   max: option.max?.toDouble() ?? 100,
-                  divisions: ((option.max ?? 100) - (option.min ?? 0)).toInt(),
                   label: option.value.toString(),
                   onChanged: (value) {
                     setState(() {
@@ -215,7 +216,6 @@ class _GlobalOptionsState extends State<GlobalOptions> {
                   value: option.value.toDouble(),
                   min: option.min?.toDouble() ?? 0,
                   max: option.max?.toDouble() ?? 100,
-                  divisions: ((option.max ?? 100) - (option.min ?? 0)).toInt(),
                   label: option.value.toString(),
                   onChanged: (value) {
                     setState(() {
@@ -291,7 +291,6 @@ class _GlobalOptionsState extends State<GlobalOptions> {
                   value: option.value.toDouble(),
                   min: option.min?.toDouble() ?? 0,
                   max: option.max?.toDouble() ?? 10000,
-                  divisions: ((option.max ?? 10000) - (option.min ?? 0)).toInt() ~/ 100,
                   label: '${(option.value / 1000).toStringAsFixed(1)}s',
                   onChanged: (value) {
                     setState(() {
@@ -315,5 +314,30 @@ class _GlobalOptionsState extends State<GlobalOptions> {
         ],
       ),
     );
+  }
+
+  Widget _buildParameterWidget(AdjustableParameter param) {
+    if (param is FloatParameter) {
+      // Handle both regular float parameters and duration parameters
+      String? suffix;
+      
+      if (param.label.toLowerCase().contains('duration')) {
+        suffix = 'ms';
+      } else if (param.label.toLowerCase() == 'gamma') {
+        suffix = '';
+      }
+      
+      return FloatParameterWidget(
+        parameter: param,
+        onParameterUpdate: (value) {
+          setState(() {
+            param.setValue(value);
+          });
+        },
+        suffix: suffix,
+      );
+    }
+    
+    return const SizedBox.shrink(); // Default fallback widget
   }
 } 

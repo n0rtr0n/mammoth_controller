@@ -93,9 +93,9 @@ class ColorParameterWidget extends StatelessWidget {
                 random.nextInt(256),
                 1,
               );
-              onRedParameterUpdate(randomColor.r.toDouble());
-              onGreenParameterUpdate(randomColor.g.toDouble());
-              onBlueParameterUpdate(randomColor.b.toDouble());
+              onRedParameterUpdate(randomColor.red.toDouble());
+              onGreenParameterUpdate(randomColor.green.toDouble());
+              onBlueParameterUpdate(randomColor.blue.toDouble());
             },
           ),
         ],
@@ -144,9 +144,9 @@ class _ColorPickerDialogState extends State<_ColorPickerDialog> {
     setState(() {
       currentColor = color;
     });
-    widget.onRedParameterUpdate(color.r.toDouble());
-    widget.onGreenParameterUpdate(color.g.toDouble());
-    widget.onBlueParameterUpdate(color.b.toDouble());
+    widget.onRedParameterUpdate(color.red.toDouble());
+    widget.onGreenParameterUpdate(color.green.toDouble());
+    widget.onBlueParameterUpdate(color.blue.toDouble());
   }
 
   @override

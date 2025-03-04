@@ -6,11 +6,13 @@ import 'package:mammoth_controller/widgets/parameter_label.dart';
 class FloatParameterWidget extends StatelessWidget {
   final FloatParameter parameter;
   final void Function(double value) onParameterUpdate;
+  final String? suffix;
 
   const FloatParameterWidget({
     super.key,
     required this.parameter,
     required this.onParameterUpdate,
+    this.suffix,
   });
 
   @override
@@ -26,7 +28,7 @@ class FloatParameterWidget extends StatelessWidget {
           SizedBox(
             width: 50,
             child: Text(
-              parameter.value.toStringAsFixed(2),
+              '${parameter.value.toStringAsFixed(2)}${suffix ?? ''}',
               textAlign: TextAlign.right,
             ),
           ),

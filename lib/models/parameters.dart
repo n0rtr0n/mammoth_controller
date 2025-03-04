@@ -7,44 +7,45 @@ abstract class AdjustableParameter {
   // Add a generic setValue method
   void setValue(dynamic value);
 
-  factory AdjustableParameter.fromJson(String label, Map<String, dynamic> json) {
-
-    if (!json.containsKey('type')) {
-      print('Parameter missing type: $json'); // Debug log
-      throw Exception('Adjustable parameter does not have a type');
-    }
+  factory AdjustableParameter.fromJson(String id, Map<String, dynamic> json) {
     final type = json['type'];
-
-    try {
-      switch (type) {
-        case 'int':
-          final value = json['value'] as int;
-          final min = json['min'] as int;
-          final max = json['max'] as int;
-          return IntParameter(label: label, value: value, min: min, max: max);
-        case 'float':
-          final value = (json['value'] as num).toDouble();
-          final min = (json['min'] as num).toDouble();
-          final max = (json['max'] as num).toDouble();
-          return FloatParameter(label: label, value: value, min: min, max: max);
-        case 'bool':
-          final value = json['value'] as bool;
-          return BoolParameter(label: label, value: value);
-        case 'color':
-          final color = json['value'] as Map<String, dynamic>;
-          final Color value = Color(
-            r: color['r'] as int,
-            b: color['b'] as int,
-            g: color['g'] as int,
-          );
-          return ColorParameter(label: label, value: value);
-        default:
-          print('Unknown parameter type: $type'); // Debug log
-          throw Exception('Invalid type for AdjustableParameter found: $type');
-      }
-    } catch (e) {
-      print('Error parsing parameter $label: $e'); // Debug log
-      rethrow;
+    
+    switch (type) {
+      case 'float':
+        return FloatParameter(
+          label: json['label'] ?? id,
+          value: (json['value'] ?? 0.0).toDouble(),
+          min: (json['min'] ?? 0.0).toDouble(),
+          max: (json['max'] ?? 1.0).toDouble(),
+        );
+      case 'int':
+        return IntParameter(
+          label: json['label'] ?? id,
+          value: (json['value'] ?? 0) as int,
+          min: (json['min'] ?? 0) as int,
+          max: (json['max'] ?? 100) as int,
+        );
+      case 'boolean':
+      case 'bool':
+        return BoolParameter(
+          label: json['label'] ?? id,
+          value: json['value'] ?? false,
+        );
+      case 'color':
+        return ColorParameter(
+          label: json['label'] ?? id,
+          value: Color.fromJson(json['value'] ?? {'r': 255, 'g': 255, 'b': 255}),
+        );
+      case 'duration':
+        // Add support for duration type
+        return FloatParameter(
+          label: json['label'] ?? id,
+          value: (json['value'] ?? 0.0).toDouble(),
+          min: (json['min'] ?? 0.0).toDouble(),
+          max: (json['max'] ?? 10000.0).toDouble(),
+        );
+      default:
+        throw Exception('Unknown parameter type: $type');
     }
   }
 }
