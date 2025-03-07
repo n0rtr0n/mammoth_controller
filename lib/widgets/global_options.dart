@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mammoth_controller/config_page.dart';
 import 'package:mammoth_controller/models/options.dart';
-import 'package:mammoth_controller/models/parameters.dart';
-import 'package:mammoth_controller/widgets/float_parameter.dart';
 
 class GlobalOptions extends StatefulWidget {
   const GlobalOptions({
@@ -257,13 +255,6 @@ class _GlobalOptionsState extends State<GlobalOptions> {
             onChanged: (value) {
               setState(() {
                 option.value = value;
-                
-                // Update dependent variables
-                if (option.id == 'patternTransitionEnabled') {
-                  patternTransitionEnabled = value;
-                } else if (option.id == 'colorMaskTransitionEnabled') {
-                  colorMaskTransitionEnabled = value;
-                }
               });
               _updateOption(option.id, value);
             },
@@ -314,30 +305,5 @@ class _GlobalOptionsState extends State<GlobalOptions> {
         ],
       ),
     );
-  }
-
-  Widget _buildParameterWidget(AdjustableParameter param) {
-    if (param is FloatParameter) {
-      // Handle both regular float parameters and duration parameters
-      String? suffix;
-      
-      if (param.label.toLowerCase().contains('duration')) {
-        suffix = 'ms';
-      } else if (param.label.toLowerCase() == 'gamma') {
-        suffix = '';
-      }
-      
-      return FloatParameterWidget(
-        parameter: param,
-        onParameterUpdate: (value) {
-          setState(() {
-            param.setValue(value);
-          });
-        },
-        suffix: suffix,
-      );
-    }
-    
-    return const SizedBox.shrink(); // Default fallback widget
   }
 } 
