@@ -16,7 +16,7 @@ class BoolParameterWidget extends StatelessWidget {
   @override
   Widget build(Object context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
         children: [
           Expanded(

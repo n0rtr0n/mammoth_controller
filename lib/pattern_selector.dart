@@ -160,7 +160,7 @@ class _PatternSelectorState extends State<PatternSelector> with SingleTickerProv
                 topRight: Radius.circular(16),
               ),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
             child: Text(
               pattern.label,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -174,12 +174,12 @@ class _PatternSelectorState extends State<PatternSelector> with SingleTickerProv
           // Parameters
           if (parameters.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
               child: ListView.separated(
                 itemCount: parameters.length,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                separatorBuilder: (context, index) => const Divider(height: 24),
+                separatorBuilder: (context, index) => const Divider(height: 8, thickness: 0.5),
                 itemBuilder: (context, index) {
                   final param = parameters[index];
                   return _buildParameterWidget(param);
@@ -189,11 +189,11 @@ class _PatternSelectorState extends State<PatternSelector> with SingleTickerProv
           
           // Update Button
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: ElevatedButton(
               onPressed: () => updateFunction(pattern.id, pattern),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
