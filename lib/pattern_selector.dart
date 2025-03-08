@@ -31,6 +31,8 @@ class PatternSelector extends StatefulWidget {
 class _PatternSelectorState extends State<PatternSelector> with SingleTickerProviderStateMixin {
   String? baseURL;
   late TabController _tabController;
+  // Track expanded state for each pattern and color mask
+  final Map<String, bool> _expandedStates = {};
   
   @override 
   void initState() {
@@ -135,6 +137,18 @@ class _PatternSelectorState extends State<PatternSelector> with SingleTickerProv
     );
   }
 
+  // Toggle expanded state for a specific pattern/mask
+  void _toggleExpanded(String id) {
+    setState(() {
+      _expandedStates[id] = !(_expandedStates[id] ?? false);
+    });
+  }
+  
+  // Check if a pattern/mask is expanded
+  bool _isExpanded(String id) {
+    return _expandedStates[id] ?? false;
+  }
+
   Widget _buildPatternCard(models.Pattern pattern, Function(String, models.Pattern) updateFunction, String buttonText) {
     final parameters = <AdjustableParameter>[];
     
@@ -151,56 +165,67 @@ class _PatternSelectorState extends State<PatternSelector> with SingleTickerProv
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header
+          // Header with expand/collapse
           Container(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
+              borderRadius: _isExpanded(pattern.id) 
+                ? const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  )
+                : BorderRadius.circular(16),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-            child: Text(
-              pattern.label,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                fontWeight: FontWeight.bold,
+            child: ListTile(
+              title: Text(
+                pattern.label,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
+              trailing: IconButton(
+                icon: Icon(_isExpanded(pattern.id) ? Icons.expand_less : Icons.expand_more),
+                onPressed: () => _toggleExpanded(pattern.id),
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
             ),
           ),
           
-          // Parameters
-          if (parameters.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-              child: ListView.separated(
-                itemCount: parameters.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                separatorBuilder: (context, index) => const Divider(height: 8, thickness: 0.5),
-                itemBuilder: (context, index) {
-                  final param = parameters[index];
-                  return _buildParameterWidget(param);
-                },
-              ),
-            ),
-          
-          // Update Button
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: ElevatedButton(
-              onPressed: () => updateFunction(pattern.id, pattern),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+          // Expanded content
+          if (_isExpanded(pattern.id)) ...[
+            // Parameters
+            if (parameters.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                child: ListView.separated(
+                  itemCount: parameters.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  separatorBuilder: (context, index) => const Divider(height: 8, thickness: 0.5),
+                  itemBuilder: (context, index) {
+                    final param = parameters[index];
+                    return _buildParameterWidget(param);
+                  },
                 ),
               ),
-              child: Text(buttonText),
+            
+            // Update Button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: ElevatedButton(
+                onPressed: () => updateFunction(pattern.id, pattern),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(buttonText),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
